@@ -1,13 +1,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 #include "embcalc.h"
-#ifdef __cplusplus
 }
-#endif
 
 /** <!-- TestCalc {{{1 -->
  */
