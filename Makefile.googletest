@@ -1,0 +1,21 @@
+MAKEFLAGS       += --no-builtin-rules
+CP              := cp
+PYTHON          := python2
+
+DIR_LIB         := gtest
+
+GTEST_VER       := 1.8.0
+GTEST_ZIP       := release-$(GTEST_VER).zip
+GTEST_DIR       := googletest-release-$(GTEST_VER)
+GITHUB_URL      := https://github.com/google/googletest/archive/$(GTEST_ZIP)
+
+setup: $(GTEST_ZIP)
+	unzip -oq $<
+	$(PYTHON) $(GTEST_DIR)/googlemock/scripts/fuse_gmock_files.py ./$(DIR_LIB)
+	\$(CP) $(GTEST_DIR)/googlemock/src/gmock_main.cc ./$(DIR_LIB)
+
+$(GTEST_ZIP):
+	wget -q --no-check-certificate $(GITHUB_URL)
+
+# end of file {{{1
+# vim:ft=make:noet:ts=4:nowrap:fdm=marker

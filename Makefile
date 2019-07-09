@@ -3,6 +3,7 @@ CC              := gcc
 CXX             := g++
 MK              := mkdir -p
 RM              := rm -rf
+MAKE            := make
 
 CFLAGS          := -std=c99 -Wall -Wextra -MMD -MP
 CXXFLAGS        := -std=c++11 -Wall
@@ -11,7 +12,7 @@ LDFLAGS         := -pthread
 DIR_SRC         := src
 DIR_OBJ         := obj
 DIR_TST         := test
-DIR_LIB         := lib
+DIR_LIB         := gtest
 INCLUDE         := $(addprefix -I,$(DIR_SRC) $(DIR_TST) $(DIR_LIB))
 
 SRCS            := \
@@ -32,6 +33,9 @@ clean:
 unittest: $(TARGET)
 	-./$(TARGET)
 
+setup:
+	@$(MAKE) -f Makefile.googletest $@ DIR_LIB=$(DIR_LIB)
+
 $(TARGET): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
@@ -51,7 +55,7 @@ ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
 endif
 
-.PHONY: all clean unittest
+.PHONY: all clean unittest setup
 
 # end of file {{{1
 # vim:ft=make:noet:ts=4:nowrap:fdm=marker

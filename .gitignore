@@ -1,3 +1,6 @@
 obj
 *.o
 *.d
+googletest-release-*/
+release-*.zip
+gtest/
