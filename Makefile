@@ -13,7 +13,10 @@ DIR_SRC         := src
 DIR_OBJ         := obj
 DIR_TST         := test
 DIR_LIB         := gtest
-INCLUDE         := $(addprefix -I,$(DIR_SRC) $(DIR_TST) $(DIR_LIB))
+INCLUDE         := $(addprefix -I, \
+  $(shell find $(DIR_SRC) -type d) \
+  $(shell find $(DIR_TST) -type d) \
+  $(DIR_LIB))
 
 SRCS            := \
   $(shell find $(DIR_SRC) -name "*.c" -or -name "*.cpp" -or -name "*.cc") \
