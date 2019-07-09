@@ -1,54 +1,57 @@
 MAKEFLAGS       += --no-builtin-rules
 CC              := gcc
-CFLAGS          := -std=c99 -Wall -Wextra -MMD -MP
-LDFLAGS         :=
-LIBS            :=
-DIR_SRC         := src
-DIR_OBJ         := obj
-DIR_SRCS        := $(shell find $(DIR_SRC) -type d)
-INCLUDE         := $(foreach dir,$(DIR_SRCS),-I$(dir))
-SRC_EXCLUDES    :=
-SRC_TARGETS     := $(foreach dir,$(DIR_SRCS),$(wildcard $(dir)/*.c))
-SRCS            := $(filter-out $(SRC_EXCLUDES),$(SRC_TARGETS))
-OBJS            := $(addprefix $(DIR_OBJ)/,$(SRCS:.c=.o))
-DEPS            := $(OBJS:.o=.d)
-TARGET          := $(notdir $(shell pwd)).o
+CXX             := g++
+MK              := mkdir -p
 RM              := rm -rf
 
-# tests
-CXX             := g++
+CFLAGS          := -std=c99 -Wall -Wextra -MMD -MP
 CXXFLAGS        := -std=c++11 -Wall
-LIBS_TST        := -lpthread -lgtest -lgtest_main
+LDFLAGS         := -pthread
+
+DIR_SRC         := src
+DIR_OBJ         := obj
 DIR_TST         := test
-DIR_TSTS        := $(shell find $(DIR_TST) -type d)
-INCLUDE_TST     := $(foreach dir,$(DIR_TSTS),-I$(dir))
-INCLUDE_TST     += $(INCLUDE)
-TSTS            := $(foreach dir,$(DIR_TSTS),$(wildcard $(dir)/*.cpp))
-OBJS_TST        := $(addprefix $(DIR_OBJ)/,$(TSTS:.cpp=.o))
-DEPS_TST        := $(OBJS_TST:.o=.d)
+DIR_LIB         := lib
+INCLUDE         := $(addprefix -I,$(DIR_SRC) $(DIR_TST) $(DIR_LIB))
+
+SRCS            := \
+  $(shell find $(DIR_SRC) -name "*.c" -or -name "*.cpp" -or -name "*.cc") \
+  $(shell find $(DIR_TST) -name "*.c" -or -name "*.cpp" -or -name "*.cc") \
+  $(shell find $(DIR_LIB) -name "*.c" -or -name "*.cpp" -or -name "*.cc") \
+
+OBJS            := $(addprefix $(DIR_OBJ)/,$(addsuffix .o,$(SRCS)))
+DEPS            := $(OBJS:.o=.d)
+
+TARGET          := $(notdir $(shell pwd)).o
 
 all: $(TARGET)
-	@[ -f $(TARGET) ] && ./$(TARGET)
 
 clean:
-	$(RM) $(DIR_OBJ)/* $(TARGET)
+	$(RM) $(DIR_OBJ) $(TARGET)
 
-$(TARGET): $(OBJS) $(OBJS_TST)
-	$(CXX) -o $@ $^ $(CXXFLAGS) $(LIBS_TST)
+unittest: $(TARGET)
+	-./$(TARGET)
 
-$(DIR_OBJ)/%.o: %.c
-	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CC) -o $@ -c $< $(CFLAGS) $(INCLUDE)
+$(TARGET): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
-$(DIR_OBJ)/%.o: %.cpp
-	@[ -d `dirname $@` ] || mkdir -p `dirname $@`
-	$(CXX) -o $@ -c $< $(CXXFLAGS) $(INCLUDE_TST)
+$(DIR_OBJ)/%.c.o: %.c
+	@$(MK) $(dir $@)
+	$(CC) $(CFLAGS) $(INCLUDE) -o $@ -c $<
+
+$(DIR_OBJ)/%.cpp.o: %.cpp
+	@$(MK) $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
+
+$(DIR_OBJ)/%.cc.o: %.cc
+	@$(MK) $(dir $@)
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -o $@ -c $<
 
 ifneq ($(MAKECMDGOALS), clean)
 -include $(DEPS)
 endif
 
-.PHONY: all clean
+.PHONY: all clean unittest
 
 # end of file {{{1
 # vim:ft=make:noet:ts=4:nowrap:fdm=marker
